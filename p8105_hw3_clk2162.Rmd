@@ -9,3 +9,44 @@ output: github_document
 library(tidyverse)
 ```
 
+# Problem 1
+
+Load data
+
+```{r}
+library(p8105.datasets)
+data("instacart")
+```
+
+Explore and describe dataset.
+
+The goal is to do some exploration of this dataset. To that end, write a short description of the dataset, noting the size and structure of the data, describing some key variables, and giving illstrative examples of observations.
+
+```{r}
+
+# Check out the structure of the data set 
+head(instacart)
+
+```
+
+This dataset has `r nrow(instacart)` rows and `r ncol(instacart)` columns. The column names are `r colnames(instacart)`. It is in a long format, and the order_id is not distinct. Each row in the datas et represents a particular item purchased and contains corresponding information about it. There are `r instacart %>% select(order_id) %>% n_distinct()` distinct orders, `r instacart %>% select(user_id) %>% n_distinct()` users (so it seems to be one order per user), containing a total of `r instacart %>% select(product_id) %>% n_distinct()` products.
+
+```{r}
+
+# aisles and number of times they occur (number of times there is an order from the aisle)
+# arrange with most ordered from aisles at the top
+aisles_df <- instacart %>%
+  count(aisle) %>% 
+  arrange(desc(n))
+
+```
+
+
+There are `r nrow(aisles_df)` aisles. The aisles most ordered from are:
+
+```{r aisles most orders, echo = FALSE}
+
+head(aisles_df %>% select("aisle"), n=10)
+
+```
+
