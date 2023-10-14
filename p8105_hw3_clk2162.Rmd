@@ -39,14 +39,42 @@ aisles_df <- instacart %>%
   count(aisle) %>% 
   arrange(desc(n))
 
+head(aisles_df)
+
 ```
 
 
 There are `r nrow(aisles_df)` aisles. The aisles most ordered from are:
 
-```{r aisles most orders, echo = FALSE}
+```{r aisles_most_orders, echo = FALSE}
 
-head(aisles_df %>% select("aisle"), n=10)
+aisles_most_orders <- head(aisles_df %>% select("aisle"), n=10)
+
+knitr::kable(aisles_most_orders)
 
 ```
+
+```{r instacart_aisle_plot}
+
+aisles_df %>%
+  filter(n > 10000) %>% 
+  mutate(aisle = fct_reorder(aisle, n)) %>% 
+  ggplot(aes(x = aisle, y = n)) +
+  geom_point() +
+  labs(title = "Number of items ordered in each aisle",
+       y = "number of items ordered") +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+
+instacart %>% 
+    filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>% 
+      group_by(aisle) %>% 
+    count(product_name) |> 
+    mutate(rank = min_rank(desc(n))) %>% 
+    filter(rank < 4) %>% 
+    arrange(desc(n)) %>% 
+    knitr::kable()
+  
+
+```
+
 
