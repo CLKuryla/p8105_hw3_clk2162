@@ -107,11 +107,15 @@ brfss_smart2010_overall_health <- brfss_smart2010 %>%
   janitor::clean_names() %>%
   rename(state = locationabbr) %>% 
   filter(topic == "Overall Health") %>%
-  # include only responses from “Excellent” to “Poor” ???????
-#  mutate(response = as.factor(response)) %>% 
   mutate(response = fct_relevel(response, c("Poor", "Fair", "Good", "Very good", "Excellent")))
 
+#brfss_smart2010_overall_health_excellent_poor <- brfss_smart2010_overall_health %>%
+#  filter(response %in% c("Excellent", "Poor"))
+  # include only responses from “Excellent” to “Poor” ???????
+
 knitr::kable(head(brfss_smart2010_overall_health, n = 20))
+
+#knitr::kable(head(brfss_smart2010_overall_health_excellent_poor, n = 20))
 
 ```
 
@@ -174,10 +178,25 @@ brfss_smart2010_overall_health %>%
   filter(state == "NY") %>%
  # filter(response %in% c("Poor", "Excellent")) %>%
   mutate(location = as.factor(locationdesc)) %>%
-  ggplot(aes(x = location, y = data_value, fill = response)) +
+#  ggplot(aes(x = location, y = data_value, fill = response)) +
+  ggplot(aes(x = response, y = data_value, fill = location)) +
   geom_bar(stat = "identity", position = "dodge") +
   facet_wrap(~year, ncol = 1) +
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
+
+# Or, viewed another way, 
+
+brfss_smart2010_overall_health %>%
+  filter(year %in% c(2006,2010)) %>%
+  filter(state == "NY") %>%
+ # filter(response %in% c("Poor", "Excellent")) %>%
+  mutate(location = as.factor(locationdesc)) %>%
+  ggplot(aes(x = location, y = data_value, fill = response)) +
+#  ggplot(aes(x = response, y = data_value, fill = location)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~year, ncol = 1) +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+
 
 ```
 
