@@ -103,8 +103,6 @@ Clean data
 
 ```{r q2_clean}
 
-brfss_smart2010_raw <- brfss_smart2010
-
 brfss_smart2010_overall_health <- brfss_smart2010 %>%
   janitor::clean_names() %>%
   rename(state = locationabbr) %>% 
@@ -156,7 +154,6 @@ brfss_smart2010_overall_health %>%
 
 
 ```{r q2_excellent_and_spaghetti}
-
 # Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state.
 
 brfss_excellent <- brfss_smart2010_overall_health %>% 
@@ -172,7 +169,11 @@ brfss_excellent %>%
   ggplot(aes(x = year, y = excellent, color = state)) +
   geom_line() +
   labs(title = "Spaghetti plot of average value over time within a state")
+```
 
+This plot shows relatively stable proportions of participants with "Excellent" as their response, ranging from around 15-30%. 
+
+```{r q2_excellent_and_spaghetti_2}
 # Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
 
 brfss_smart2010_overall_health %>%
@@ -203,6 +204,8 @@ brfss_smart2010_overall_health %>%
 
 
 ```
+
+From these visualizations, we can see that the most common responses are generally "Good" and "Very good." Usually, "Very good" is more common than "Good," except for some years and locations, such as Kings and Queens Counties in 2006 and Bronx County in 2010 (there is no data for the Bronx in 2006). In 2010, more counties were surveyed than in 2006. 
 
 ## Problem 3
 
