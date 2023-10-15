@@ -54,8 +54,9 @@ knitr::kable(aisles_most_orders)
 
 ```
 
-```{r instacart_aisle_plot}
+```{r instacart_aisle_plot_and_tables}
 
+# Plot number of items ordered in top 10000 aisles
 aisles_df %>%
   filter(n > 10000) %>% 
   mutate(aisle = fct_reorder(aisle, n)) %>% 
@@ -65,6 +66,7 @@ aisles_df %>%
        y = "number of items ordered") +
   theme(axis.text.x = element_text(angle = 60, hjust = 1))
 
+# Three most popular items in three aisles of interest
 instacart %>% 
     filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>% 
       group_by(aisle) %>% 
@@ -74,6 +76,108 @@ instacart %>%
     arrange(desc(n)) %>% 
     knitr::kable()
   
+# Pink Lady Apples and Coffee Ice Cream order details
+instacart %>% 
+  filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>% 
+  group_by(product_name, order_dow) %>% 
+  summarize(mean_hour = mean(order_hour_of_day)) %>% 
+  pivot_wider(
+    names_from = order_dow, 
+    values_from = mean_hour) %>% 
+  knitr::kable(digits = 2)
+
+```
+
+# Problem 2
+
+Load data 
+
+```{r q2_load}
+library(p8105.datasets)
+data("brfss_smart2010")
+```
+
+Clean data
+
+```{r q2_clean}
+
+brfss_smart2010_raw <- brfss_smart2010
+
+brfss_smart2010_overall_health <- brfss_smart2010 %>%
+  janitor::clean_names() %>%
+  rename(state = locationabbr) %>% 
+  filter(topic == "Overall Health") %>%
+  # include only responses from “Excellent” to “Poor” ???????
+#  mutate(response = as.factor(response)) %>% 
+  mutate(response = fct_relevel(response, c("Poor", "Fair", "Good", "Very good", "Excellent")))
+
+knitr::kable(head(brfss_smart2010_overall_health, n = 20))
+
+```
+
+In 2002, which states were observed at 7 or more locations? What about in 2010?
+
+In 2002, the states observed at 7 or more locations were: 
+```{r seven_or_more_2002}
+
+# Filter for 2002, determine number of locations per state, keep only those with seven or more
+
+brfss_smart2010_overall_health %>% 
+  filter(year == 2002) %>% 
+  filter(response == "Excellent") %>% # Arbitarily filter by one response so there is only one observation per location
+  count(state) %>%
+  filter(n >= 7) %>%
+  select(state) %>% 
+  knitr::kable(caption = "States with seven or more locations in 2002")
+```
+
+
+
+In 2010, the states observed at 7 or more locations were: 
+```{r seven_or_more seven_or_more_2010}
+
+# Filter for 2010, determine number of locations per state, keep only those with seven or more
+
+brfss_smart2010_overall_health %>% 
+  filter(year == 2010) %>% 
+  filter(response == "Excellent") %>% # Arbitarily filter by one response so there is only one observation per location
+  count(state) %>%
+  filter(n >= 7) %>% 
+  select(state) %>% 
+  knitr::kable(caption = "States with seven or more locations in 2010")
+  
+```
+
+
+```{r q2_excellent_and_spaghetti}
+
+# Construct a dataset that is limited to Excellent responses, and contains, year, state, and a variable that averages the data_value across locations within a state.
+
+brfss_excellent <- brfss_smart2010_overall_health %>% 
+  filter(response == "Excellent") %>%
+  group_by(state, year) %>% 
+  summarise(excellent = mean(data_value)) 
+
+knitr::kable(head(brfss_excellent, n=20))
+
+#  Make a “spaghetti” plot of this average value over time within a state (that is, make a plot showing a line for each state across years).
+
+brfss_excellent %>% 
+  ggplot(aes(x = year, y = excellent, color = state)) +
+  geom_line() +
+  labs(title = "Spaghetti plot of average value over time within a state")
+
+# Make a two-panel plot showing, for the years 2006, and 2010, distribution of data_value for responses (“Poor” to “Excellent”) among locations in NY State.
+
+brfss_smart2010_overall_health %>%
+  filter(year %in% c(2006,2010)) %>%
+  filter(state == "NY") %>%
+ # filter(response %in% c("Poor", "Excellent")) %>%
+  mutate(location = as.factor(locationdesc)) %>%
+  ggplot(aes(x = location, y = data_value, fill = response)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~year, ncol = 1) +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1))
 
 ```
 
