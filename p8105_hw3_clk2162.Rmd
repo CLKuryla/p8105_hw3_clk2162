@@ -90,6 +90,8 @@ instacart %>%
 
 # Problem 2
 
+This problem has to do with several things, we are focusing on self reported health over locations and years.
+
 Load data 
 
 ```{r q2_load}
@@ -182,7 +184,8 @@ brfss_smart2010_overall_health %>%
   ggplot(aes(x = response, y = data_value, fill = location)) +
   geom_bar(stat = "identity", position = "dodge") +
   facet_wrap(~year, ncol = 1) +
-  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  labs(title = "Distribution of data_value for responses among locations in NY in 2006 and 2010")
 
 # Or, viewed another way, 
 
@@ -195,8 +198,78 @@ brfss_smart2010_overall_health %>%
 #  ggplot(aes(x = response, y = data_value, fill = location)) +
   geom_bar(stat = "identity", position = "dodge") +
   facet_wrap(~year, ncol = 1) +
-  theme(axis.text.x = element_text(angle = 60, hjust = 1))
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  labs(title = "Distribution of data_value for responses among locations in NY in 2006 and 2010")
 
+
+```
+
+## Problem 3
+
+This problem has to do with accelerometers in observational studies and clinical trials. 
+
+Load, clean, and tidy data.
+
+```{r q3_data}
+nhanes_accel <- read_csv("./data/nhanes_accel.csv")
+nhanes_covar <- read_csv("./data/nhanes_covar.csv", skip = 4)
+
+nhanes_accel <- nhanes_accel %>% 
+  janitor::clean_names() %>% 
+  mutate(seqn = as.character(seqn)) 
+  
+nhanes_covar <- nhanes_covar %>% 
+  janitor::clean_names() %>% 
+  filter(age > 21) %>% 
+  filter(!is.na(age) & !is.na(sex) & !is.na(bmi) & !is.na(education)) %>%
+  mutate(sex = as.character(sex)) %>% 
+  mutate(education = as.character(education)) %>% 
+  mutate(sex = case_match(sex,
+                          "1" ~ "male",
+                          "2" ~ "female")) %>% 
+  mutate(education = case_match(education,
+                                "1" ~ "less_than_high_school",
+                                "2" ~ "high_school_equivalent",
+                                "3" ~ "more_than_high_school")) %>%
+  mutate(education = fct_relevel(education, c("less_than_high_school", "high_school_equivalent", "more_than_high_school"))) %>% 
+  mutate(seqn = as.character(seqn)) %>% 
+  mutate(sex = as.factor(sex))
+  
+
+# combine the two dfs
+
+nhanes_df <- inner_join(nhanes_covar, nhanes_accel, by = "seqn")
+```
+
+
+Now we will explore the education distribution over demographic variables.
+
+```{r q3_education}
+# Table showing the number of men and women in each education category
+
+education_sex <- nhanes_covar %>% 
+  select(sex, education) %>% 
+  group_by(education, sex) %>%
+  count(education, sex) %>% 
+  pivot_wider(names_from = sex,
+              values_from = n)
+
+knitr::kable(education_sex)
+
+```
+
+From the table, we see that the most common education level is more than high school. The distributions are relatively similar between sexes, except that there are substantially more males than females in the high school equivalent category. 
+
+```{r q3_education_age_sex}
+
+# visualization of the age distributions for men and women in each education category
+
+library(ggridges)
+
+nhanes_covar %>%
+  ggplot(aes(x = education, y = age, fill = sex)) +
+  geom_violin()
+  geom_density_ridges(alpha = 0.2)
 
 ```
 
